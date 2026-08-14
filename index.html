@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบรับสมัครงาน</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F8F5EE;
+    --paper-2:#F1EBDD;
+    --ink:#20302B;
+    --ink-soft:#54655D;
+    --line:#D8CFB8;
+    --line-strong:#20302B;
+    --forest:#2F5D50;
+    --forest-dark:#1B3B32;
+    --gold:#A67C1E;
+    --gold-bg:#F3E6C4;
+    --rust:#8C4A38;
+    --rust-bg:#F1DCD3;
+    --white:#FFFEFB;
+    --radius:10px;
+    --shadow:0 1px 2px rgba(32,48,43,0.06);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    line-height:1.6;
+  }
+  .wrap{max-width:820px;margin:0 auto;padding:2.5rem 1.5rem 5rem;}
+  header.top{margin-bottom:1.75rem;}
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:12px;
+    letter-spacing:0.08em;
+    color:var(--forest);
+    text-transform:uppercase;
+    margin:0 0 6px;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:600;
+    font-size:clamp(28px,4vw,38px);
+    margin:0 0 8px;
+    color:var(--ink);
+  }
+  .sub{color:var(--ink-soft);font-size:15px;margin:0;max-width:56ch;}
+
+  .storage-banner{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px;
+    padding:8px 14px;
+    border-radius:8px;
+    margin-top:14px;
+    display:none;
+    align-items:center;
+    gap:8px;
+  }
+  .storage-banner.ok{background:#E4EEE9;color:var(--forest-dark);display:flex;}
+  .storage-banner.warn{background:var(--rust-bg);color:var(--rust);display:flex;}
+  .storage-banner span.msg{flex:1;}
+
+  nav.tabs{
+    display:flex;
+    gap:4px;
+    margin:2rem 0 0;
+    border-bottom:2px solid var(--line-strong);
+  }
+  nav.tabs button{
+    font-family:'Fraunces',serif;
+    font-size:15px;
+    font-weight:600;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-bottom:none;
+    color:var(--ink-soft);
+    padding:10px 20px 12px;
+    border-radius:8px 8px 0 0;
+    cursor:pointer;
+    position:relative;
+    top:2px;
+  }
+  nav.tabs button.active{
+    background:var(--white);
+    color:var(--ink);
+    border-color:var(--line-strong);
+    border-bottom:2px solid var(--white);
+  }
+  nav.tabs button:hover:not(.active){background:#ECE4CF;}
+
+  .panel{
+    background:var(--white);
+    border:1px solid var(--line-strong);
+    border-top:none;
+    border-radius:0 0 var(--radius) var(--radius);
+    padding:2rem;
+  }
+  @media (max-width:560px){ .panel{padding:1.25rem;} }
+
+  .section-label{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--forest);
+    border-bottom:1px dashed var(--line);
+    padding-bottom:6px;
+    margin:2rem 0 1rem;
+  }
+  .section-label:first-of-type{margin-top:0;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  @media (max-width:560px){ .grid2{grid-template-columns:1fr;} }
+
+  .field{margin-bottom:16px;}
+  .field label{
+    display:block;
+    font-size:13px;
+    font-weight:500;
+    color:var(--ink);
+    margin-bottom:6px;
+  }
+  .field label .req{color:var(--rust);margin-left:2px;}
+  input[type=text], input[type=tel], input[type=email], input[type=password], input[type=date], input[type=number], select, textarea{
+    width:100%;
+    font-family:'Inter',sans-serif;
+    font-size:14px;
+    padding:10px 12px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    background:var(--paper);
+    color:var(--ink);
+  }
+  input:focus, select:focus, textarea:focus{
+    outline:none;
+    border-color:var(--forest);
+    box-shadow:0 0 0 3px rgba(47,93,80,0.15);
+  }
+  textarea{min-height:90px;resize:vertical;}
+
+  .field.invalid input, .field.invalid select{
+    border-color:var(--rust) !important;
+    background:var(--rust-bg) !important;
+    box-shadow:0 0 0 3px rgba(140,74,56,0.15) !important;
+  }
+  .field-error{
+    display:none;
+    font-size:12px;
+    color:var(--rust);
+    margin-top:4px;
+    font-weight:500;
+  }
+  .field.invalid .field-error{display:block;}
+
+  .dropzone{
+    border:2px dashed var(--line);
+    border-radius:var(--radius);
+    padding:1.5rem;
+    text-align:center;
+    background:var(--paper-2);
+    cursor:pointer;
+    transition:border-color .15s;
+  }
+  .dropzone:hover{border-color:var(--forest);}
+  .dropzone svg{color:var(--forest);}
+  .dropzone p{margin:6px 0 0;font-size:13px;color:var(--ink-soft);}
+  .filelist{margin-top:10px;display:flex;flex-direction:column;gap:6px;}
+  .filechip{
+    display:flex;align-items:center;justify-content:space-between;
+    background:var(--white);border:1px solid var(--line);border-radius:6px;
+    padding:6px 10px;font-size:13px;
+  }
+  .filechip .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%;}
+  .filechip button{
+    background:none;border:none;color:var(--rust);cursor:pointer;font-size:13px;
+    font-family:'Inter',sans-serif;
+  }
+
+  .submit-row{margin-top:2rem;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+  button.primary{
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    background:var(--forest);
+    color:var(--white);
+    border:none;
+    padding:12px 24px;
+    border-radius:8px;
+    cursor:pointer;
+  }
+  button.primary:hover{background:var(--forest-dark);}
+  button.primary:disabled{opacity:0.5;cursor:not-allowed;}
+  
+  button.secondary {
+    font-family:'Inter',sans-serif;
+    font-weight:600;
+    font-size:14px;
+    background: #95a5a6;
+    color:var(--white);
+    border:none;
+    padding:12px 24px;
+    border-radius:8px;
+    cursor:pointer;
+    display: none;
+  }
+  button.secondary:hover {background: #7f8c8d;}
+
+  .logout-btn {
+    background-color: var(--rust) !important;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+  .logout-btn:hover { background-color: #723b2c !important; }
+
+  /* Login Box Styling */
+  .login-box {
+    max-width: 400px;
+    margin: 2rem auto;
+    padding: 2.5rem 2rem;
+    background: var(--paper-2);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .login-box h3 {
+    margin: 0 0 1.25rem 0;
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--ink);
+  }
+
+  .status-msg{font-size:13px;color:var(--ink-soft);}
+  .status-msg.err{color:var(--rust);font-weight:600;}
+  .status-msg.ok{color:var(--forest);}
+
+  .receipt{
+    margin-top:1.5rem;
+    border:1px dashed var(--gold);
+    background:var(--gold-bg);
+    border-radius:var(--radius);
+    padding:1.25rem 1.5rem;
+    display:none;
+  }
+  .receipt.show{display:block;}
+  .receipt .stamp{
+    display:inline-block;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:13px;
+    font-weight:500;
+    color:var(--rust);
+    border:2px solid var(--rust);
+    border-radius:4px;
+    padding:4px 10px;
+    transform:rotate(-2deg);
+    margin-bottom:8px;
+  }
+  .receipt p{margin:2px 0;font-size:13px;color:var(--ink);}
+
+  .clickable-name {
+    margin: 0 0 5px 0; 
+    color: #1a252f; 
+    font-size: 16px; 
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  .clickable-name:hover {
+    color: var(--forest);
+    text-decoration: underline;
+  }
+
+  /* Status Badges */
+  .status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-block;
+  }
+  .badge-pending { background: #FFF3CD; color: #856404; }
+  .badge-interview { background: #CCE5FF; color: #004085; }
+  .badge-passed { background: #D4EDDA; color: #155724; }
+  .badge-rejected { background: #F8D7DA; color: #721c24; }
+
+  /* Role Badges */
+  .role-badge {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .role-admin { background: #8C4A38; color: white; }
+  .role-auditor { background: #A67C1E; color: white; }
+  .role-staff { background: #2F5D50; color: white; }
+
+  /* Modal Styles */
+  .modal-overlay {
+    display: none; 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(32,48,43,0.6);
+    z-index: 1000;
+    justify-content: center; align-items: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal-content {
+    background: var(--white);
+    width: 100%; max-width: 650px;
+    border-radius: var(--radius);
+    padding: 2rem;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  .modal-close {
+    position: absolute; top: 15px; right: 15px;
+    background: none; border: none;
+    font-size: 20px; cursor: pointer; color: var(--ink-soft);
+    padding: 5px;
+  }
+  .modal-close:hover { color: var(--rust); }
+  .detail-group { margin-bottom: 12px; }
+  .detail-label { font-size: 12px; color: var(--ink-soft); margin-bottom: 2px; }
+  .detail-value { font-size: 14px; font-weight: 500; color: var(--ink); word-break: break-word; }
+  .detail-link { color: #2980b9; text-decoration: none; transition: color 0.2s; }
+  .detail-link:hover { color: var(--forest); text-decoration: underline; }
+
+  /* Custom Delete Confirmation & Alert Modals */
+  .confirm-modal-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+    z-index: 2000;
+    justify-content: center; align-items: center;
+  }
+  .confirm-modal-overlay.active { display: flex; }
+  .confirm-modal-box {
+    background: #eef7f6;
+    padding: 28px 36px;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    max-width: 340px;
+    width: 85%;
+    animation: popIn 0.2s ease-out;
+  }
+  @keyframes popIn {
+    from { transform: scale(0.9); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .confirm-modal-title {
+    color: #c0392b;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+    font-family: 'Inter', sans-serif;
+  }
+  .confirm-modal-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+  }
+  .btn-confirm-yes {
+    background-color: #e74c3c;
+    color: #ffffff;
+    border: none;
+    padding: 8px 22px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .btn-confirm-yes:hover { background-color: #c0392b; }
+  .btn-confirm-no {
+    background-color: #d1f2eb;
+    color: #16a085;
+    border: none;
+    padding: 8px 22px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .btn-confirm-no:hover { background-color: #a3e4d7; }
+
+  .alert-icon {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px; font-size: 24px;
+  }
+  .alert-icon.success { background-color: #d4edda; color: #155724; }
+  .alert-icon.error { background-color: #f8d7da; color: #721c24; }
+  .btn-alert-ok {
+    background-color: var(--forest);
+    color: #ffffff;
+    border: none;
+    padding: 9px 28px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  .btn-alert-ok:hover { background-color: var(--forest-dark); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <p class="eyebrow">ระบบรับสมัครงาน</p>
+    <h1>แฟ้มใบสมัครงาน</h1>
+    <p class="sub">กรอกแบบฟอร์มเพื่อสมัครงาน แนบเอกสารประกอบ ระบบจะบันทึกข้อมูลลง Google Sheets และส่งเข้าอีเมลเจ้าหน้าที่โดยอัตโนมัติ</p>
+    <div class="storage-banner ok" id="storageBanner" style="display:flex;">
+      <span class="msg">เชื่อมต่อระบบ Google Sheets และ FormSubmit สำเร็จ</span>
+    </div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tabApplyBtn" class="active">ยื่นใบสมัคร</button>
+    <button id="tabViewBtn">เข้าสู่ระบบเจ้าหน้าที่</button>
+  </nav>
+
+  <!-- APPLY PANEL -->
+  <section class="panel" id="applyPanel">
+    <form id="appForm" novalidate>
+      <input type="hidden" name="_url" value="https://supawattmc1.github.io/apply_form/">
+      <div class="section-label">ข้อมูลส่วนตัว</div>
+      <div class="grid2">
+        <div class="field" id="wrap_fName">
+          <label>ชื่อ-นามสกุล<span class="req">*</span></label>
+          <input type="text" id="fName">
+          <div class="field-error">กรุณากรอกชื่อ-นามสกุล</div>
+        </div>
+        <div class="field" id="wrap_fDob">
+          <label>วันเกิด</label>
+          <input type="date" id="fDob">
+        </div>
+        <div class="field" id="wrap_fPhone">
+          <label>เบอร์โทรศัพท์<span class="req">*</span></label>
+          <input type="tel" id="fPhone">
+          <div class="field-error">กรุณากรอกเบอร์โทรศัพท์</div>
+        </div>
+        <div class="field" id="wrap_fEmail">
+          <label>อีเมล<span class="req">*</span></label>
+          <input type="email" id="fEmail">
+          <div class="field-error">กรุณากรอกอีเมลให้ถูกต้อง</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>ที่อยู่ปัจจุบัน</label>
+        <textarea id="fAddress" placeholder="บ้านเลขที่ ถนน ตำบล/แขวง อำเภอ/เขต จังหวัด"></textarea>
+      </div>
+
+      <div class="section-label">ข้อมูลการสมัคร</div>
+      <div class="grid2">
+        <div class="field" id="wrap_fPosition">
+          <label>ตำแหน่งที่สมัคร<span class="req">*</span></label>
+          <input type="text" id="fPosition" placeholder="เช่น โปรแกรมเมอร์, ฝ่ายการตลาด">
+          <div class="field-error">กรุณากรอกตำแหน่งที่สมัคร</div>
+        </div>
+        <div class="field">
+          <label>เงินเดือนที่คาดหวัง</label>
+          <input type="text" id="fSalary" placeholder="เช่น 20,000 บาท">
+        </div>
+        <div class="field">
+          <label>วุฒิการศึกษาสูงสุด</label>
+          <select id="fEducation">
+            <option value="">— เลือกวุฒิการศึกษา —</option>
+            <option>มัธยมศึกษาตอนต้น (ม.3)</option>
+            <option>มัธยมศึกษาตอนปลาย / ปวช. (ม.6)</option>
+            <option>ประกาศนียบัตรวิชาชีพชั้นสูง (ปวส.) / อนุปริญญา</option>
+            <option>ปริญญาตรี</option>
+            <option>ปริญญาโท</option>
+            <option>ปริญญาเอก</option>
+            <option value="อื่นๆ">อื่นๆ</option>
+          </select>
+        </div>
+        <div class="field" id="wrap_fOtherEdu" style="display: none;">
+          <label>ระบุวุฒิการศึกษาอื่นๆ</label>
+          <input type="text" id="fOtherEdu" placeholder="เช่น กศน., ประกาศนียบัตรเฉพาะทาง">
+        </div>
+      </div>
+      
+      <div class="field">
+        <label>ประสบการณ์ทำงาน</label>
+        <textarea id="fExperience" placeholder="สรุปประสบการณ์ทำงานที่ผ่านมา"></textarea>
+      </div>
+
+      <div class="section-label">เอกสารแนบ</div>
+      <div class="field">
+        <label>แนบเรซูเม่ / รูปถ่าย / เอกสารอื่นๆ (ไฟล์ละไม่เกิน 8 MB)</label>
+        <div class="dropzone" id="dropzone">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <p>คลิกเพื่อเลือกไฟล์ หรือรูปภาพ (PDF, JPG, PNG, DOCX)</p>
+        </div>
+        <input type="file" id="fFiles" multiple accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" style="display:none;">
+        <div class="filelist" id="filelist"></div>
+      </div>
+
+      <div class="submit-row">
+        <button type="submit" class="primary" id="submitBtn">ส่งใบสมัคร</button>
+        <button type="button" class="secondary" id="cancelEditBtn" onclick="cancelEdit()">ยกเลิกการแก้ไข</button>
+        <span class="status-msg" id="statusMsg"></span>
+      </div>
+
+      <div class="receipt" id="receiptBox">
+        <div class="stamp" id="receiptNo"></div>
+        <p id="receiptName"></p>
+        <p id="receiptDate"></p>
+        <p style="margin-top: 8px; font-weight: 500; color: var(--forest);">ขอบคุณสำหรับข้อมูล ใบสมัครและเอกสารของคุณถูกบันทึกเข้าระบบเรียบร้อยแล้ว เจ้าหน้าที่จะติดต่อกลับตามเบอร์โทรศัพท์หรืออีเมลที่แจ้งไว้ครับ</p>
+      </div>
+    </form>
+  </section>
+
+  <!-- VIEW PANEL -->
+  <section class="panel" id="viewPanel" style="display:none;">
+    
+    <!-- LOGIN FORM SECTION -->
+    <div id="loginFormSection" class="login-box">
+      <h3>🔐 เข้าสู่ระบบเจ้าหน้าที่</h3>
+      <p style="font-size: 12px; color: var(--ink-soft); margin-bottom: 15px;">สำหรับเจ้าหน้าที่ / ผู้ดูแลระบบ เข้าสู่ระบบเพื่อตรวจสอบข้อมูลใบสมัคร</p>
+      <div class="field" style="text-align: left;">
+        <label>ชื่อผู้ใช้ (Username)</label>
+        <input type="text" id="loginUser" placeholder="ระบุชื่อผู้ใช้">
+      </div>
+      <div class="field" style="text-align: left;">
+        <label>รหัสผ่าน (Password)</label>
+        <input type="password" id="loginPass" placeholder="ระบุรหัสผ่าน">
+      </div>
+      <div id="loginErrorMsg" class="status-msg err" style="margin-bottom: 1rem; display: none;"></div>
+      <button type="button" class="primary" id="loginBtn" onclick="submitLogin()" style="width: 100%;">เข้าสู่ระบบ</button>
+    </div>
+
+    <!-- DASHBOARD CONTENT (แสดงหลังเข้าสู่ระบบสำเร็จ) -->
+    <div id="adminContent" style="display: none;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+        <div id="userInfoDisplay" style="display: flex; align-items: center; gap: 8px; font-size: 14px;"></div>
+        
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
+          <label id="selectAllWrap" style="font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 4px; color: var(--ink-soft); font-weight: 500;">
+            <input type="checkbox" id="selectAll" onclick="toggleSelectAll(this)"> เลือกทั้งหมด
+          </label>
+          <button onclick="exportSelectedToCSV()" type="button" style="background-color: #2980b9; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;">
+            ☑️ ดาวน์โหลดที่เลือก
+          </button>
+          <button onclick="exportAllToCSV()" type="button" style="background-color: #27ae60; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500;">
+            📊 ดาวน์โหลดทั้งหมด
+          </button>
+          <button id="btnDeleteSelected" onclick="deleteSelectedRecords()" type="button" style="background-color: #d9534f; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; display: none;">
+            🗑️ ลบรายการที่เลือก
+          </button>
+          <button onclick="handleLogout()" type="button" class="logout-btn">
+            🚪 ออกจากระบบ
+          </button>
+        </div>
+      </div>
+
+      <div style="background-color: #fffdf9; padding: 20px; border-radius: 8px; min-height: 400px; border: 1px solid #eee;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <input type="text" id="searchInput" onkeyup="searchCards()" placeholder="ค้นหาจากชื่อ หรือตำแหน่ง..." 
+                   style="padding: 10px 15px; width: 300px; border: 1px solid #e3dec9; border-radius: 8px; background-color: #f7f3e8; outline: none; font-family: inherit; font-size: 14px;">
+            <span id="recordCount" style="color: #888; font-size: 14px; font-weight: 500;">0 ใบสมัคร</span>
+        </div>
+        <div id="cardList" style="display: flex; flex-direction: column; gap: 12px;"></div>
+      </div>
+    </div>
+
+  </section>
+</div>
+
+<!-- MODAL รายละเอียดใบสมัคร -->
+<div class="modal-overlay" id="detailModal" onclick="closeModal(event)">
+  <div class="modal-content" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modalName" style="margin: 0 0 10px 0; color: var(--forest); font-family: 'Fraunces', serif;">ชื่อผู้สมัคร</h2>
+    <div style="border-bottom: 1px dashed var(--line); margin-bottom: 15px;"></div>
+    
+    <div class="grid2">
+      <div class="detail-group"><div class="detail-label">เลขที่ใบสมัคร</div><div class="detail-value" id="mdReceipt"></div></div>
+      <div class="detail-group"><div class="detail-label">วันที่ยื่น</div><div class="detail-value" id="mdDate"></div></div>
+      <div class="detail-group"><div class="detail-label">ตำแหน่งที่สมัคร</div><div class="detail-value" id="mdPosition"></div></div>
+      <div class="detail-group"><div class="detail-label">สถานะปัจจุบัน</div><div class="detail-value" id="mdStatus"></div></div>
+      <div class="detail-group"><div class="detail-label">เงินเดือนที่คาดหวัง</div><div class="detail-value" id="mdSalary"></div></div>
+      <div class="detail-group"><div class="detail-label">เบอร์โทรศัพท์</div><div class="detail-value" id="mdPhone"></div></div>
+      <div class="detail-group"><div class="detail-label">อีเมล</div><div class="detail-value" id="mdEmail"></div></div>
+      <div class="detail-group"><div class="detail-label">วันเกิด</div><div class="detail-value" id="mdDob"></div></div>
+      <div class="detail-group"><div class="detail-label">วุฒิการศึกษา</div><div class="detail-value" id="mdEdu"></div></div>
+    </div>
+    
+    <div class="detail-group" style="margin-top: 10px;">
+      <div class="detail-label">ที่อยู่ปัจจุบัน</div>
+      <div class="detail-value" id="mdAddress"></div>
+    </div>
+    <div class="detail-group">
+      <div class="detail-label">ประสบการณ์ทำงาน</div>
+      <div class="detail-value" id="mdExp" style="white-space: pre-wrap; background: var(--paper); padding: 10px; border-radius: 6px; border: 1px solid var(--line); margin-top: 5px;"></div>
+    </div>
+    <div class="detail-group" id="mdFilesGroup" style="display: none; margin-top: 15px;">
+      <div class="detail-label">รายชื่อไฟล์แนบ</div>
+      <div id="mdFiles" style="display: flex; flex-direction: column; gap: 8px; margin-top: 8px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ยืนยันการลบ -->
+<div class="confirm-modal-overlay" id="confirmDeleteModal">
+  <div class="confirm-modal-box">
+    <h3 class="confirm-modal-title">ลบแน่หรือ?</h3>
+    <div class="confirm-modal-buttons">
+      <button class="btn-confirm-yes" id="btnConfirmYes">ใช่</button>
+      <button class="btn-confirm-no" id="btnConfirmNo">ไม่</button>
+    </div>
+  </div>
+</div>
+
+<!-- CUSTOM ALERT MODAL -->
+<div class="confirm-modal-overlay" id="customAlertModal">
+  <div class="confirm-modal-box">
+    <div class="alert-icon success" id="alertIcon">✓</div>
+    <h3 class="confirm-modal-title" id="alertTitle" style="color: var(--ink); margin-bottom: 8px; font-size: 18px;">แจ้งเตือน</h3>
+    <p id="alertMessage" style="color: var(--ink-soft); font-size: 14px; margin: 0 0 20px 0; font-family: 'Inter', sans-serif;"></p>
+    <div style="display: flex; justify-content: center;">
+      <button class="btn-alert-ok" id="btnAlertOk">ตกลง</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let selectedFiles = [];
+let currentSheetData = []; 
+
+const RECIPIENT_EMAIL = 'supawat.tmc1@gmail.com';
+const FORMSUBMIT_ENDPOINT = 'https://formsubmit.co/' + RECIPIENT_EMAIL;
+const GOOGLE_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwsjAXh2GmZ9Dda8-f5Qy-WfhkF4EZ9nC0eBfq5ZGXzWDgV8y3E-eKUhohKgA-k6txx/exec';
+
+// ==========================================
+// ระบบตรวจสอบสิทธิ์เข้าสู่ระบบเจ้าหน้าที่
+// ==========================================
+async function submitLogin() {
+    const user = $('loginUser').value.trim();
+    const pass = $('loginPass').value.trim();
+    const errMsg = $('loginErrorMsg');
+    const btn = $('loginBtn');
+
+    if (!user || !pass) {
+        errMsg.innerText = 'กรุณากรอกชื่อผู้ใช้และรหัสผ่าน';
+        errMsg.style.display = 'block';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerText = 'กำลังตรวจสอบ...';
+    errMsg.style.display = 'none';
+
+    try {
+        const res = await fetch(GOOGLE_SHEET_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'login', username: user, password: pass })
+        });
+        const result = await res.json();
+
+        if (result.status === 'success') {
+            localStorage.setItem('isLoggedIn', 'true');
+            localStorage.setItem('userRole', result.role || 'Staff');
+            localStorage.setItem('userName', result.name || user);
+            localStorage.setItem('username', result.username || user);
+            
+            $('loginUser').value = '';
+            $('loginPass').value = '';
+            checkAuthStateAndRender();
+        } else {
+            errMsg.innerText = result.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง';
+            errMsg.style.display = 'block';
+        }
+    } catch (err) {
+        errMsg.innerText = 'เกิดข้อผิดพลาดในการเชื่อมต่อระบบ';
+        errMsg.style.display = 'block';
+    } finally {
+        btn.disabled = false;
+        btn.innerText = 'เข้าสู่ระบบ';
+    }
+}
+
+function handleLogout() {
+    localStorage.clear();
+    checkAuthStateAndRender();
+}
+
+function checkAuthStateAndRender() {
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+    if (isLoggedIn) {
+        $('loginFormSection').style.display = 'none';
+        $('adminContent').style.display = 'block';
+
+        const role = localStorage.getItem('userRole') || 'Staff';
+        const name = localStorage.getItem('userName') || '';
+
+        $('userInfoDisplay').innerHTML = `
+            <span class="role-badge role-${role.toLowerCase()}">${getRoleLabel(role)}</span>
+            <strong style="color: var(--ink);">${escapeHtml(name)}</strong>
+        `;
+
+        const isAdmin = (role === 'Admin');
+        const isAuditorOrAdmin = (role === 'Admin' || role === 'Auditor');
+
+        if ($('btnDeleteSelected')) $('btnDeleteSelected').style.display = isAdmin ? 'inline-block' : 'none';
+        if ($('selectAllWrap')) $('selectAllWrap').style.display = isAuditorOrAdmin ? 'flex' : 'none';
+
+        renderCards();
+    } else {
+        $('loginFormSection').style.display = 'block';
+        $('adminContent').style.display = 'none';
+    }
+}
+
+function getRoleLabel(role) {
+    if (role === 'Admin') return '👑 Admin (ผู้ดูแลระบบ)';
+    if (role === 'Auditor') return '👁️ Auditor (ผู้ตรวจสอบ)';
+    return '👤 Staff (เจ้าหน้าที่)';
+}
+
+$('loginPass').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') submitLogin();
+});
+
+// Helper Functions
+function formatDateOnly(dateStr) {
+    if (!dateStr || dateStr === '-') return '-';
+    let cleanStr = typeof dateStr === 'string' && dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+    const date = new Date(cleanStr);
+    if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+    return cleanStr;
+}
+
+function getStatusBadgeClass(status) {
+    if (status === 'เรียกสัมภาษณ์') return 'badge-interview';
+    if (status === 'ผ่านการคัดเลือก') return 'badge-passed';
+    if (status === 'ไม่ผ่านการคัดเลือก') return 'badge-rejected';
+    return 'badge-pending';
+}
+
+function customConfirmDelete() {
+    return new Promise((resolve) => {
+        const modal = $('confirmDeleteModal');
+        modal.classList.add('active');
+
+        const handleYes = () => { cleanup(); resolve(true); };
+        const handleNo = () => { cleanup(); resolve(false); };
+        const cleanup = () => {
+            modal.classList.remove('active');
+            $('btnConfirmYes').removeEventListener('click', handleYes);
+            $('btnConfirmNo').removeEventListener('click', handleNo);
+        };
+
+        $('btnConfirmYes').addEventListener('click', handleYes);
+        $('btnConfirmNo').addEventListener('click', handleNo);
+    });
+}
+
+function customAlert(message, isError = false, title = '') {
+    return new Promise((resolve) => {
+        const modal = $('customAlertModal');
+        const titleEl = $('alertTitle');
+        const msgEl = $('alertMessage');
+        const iconEl = $('alertIcon');
+        const btnOk = $('btnAlertOk');
+
+        if (isError) {
+            iconEl.className = 'alert-icon error';
+            iconEl.innerHTML = '✕';
+            titleEl.textContent = title || 'เกิดข้อผิดพลาด';
+            titleEl.style.color = '#c0392b';
+        } else {
+            iconEl.className = 'alert-icon success';
+            iconEl.innerHTML = '✓';
+            titleEl.textContent = title || 'สำเร็จ';
+            titleEl.style.color = 'var(--forest)';
+        }
+
+        msgEl.textContent = message;
+        modal.classList.add('active');
+
+        const handleOk = () => {
+            modal.classList.remove('active');
+            btnOk.removeEventListener('click', handleOk);
+            resolve();
+        };
+
+        btnOk.addEventListener('click', handleOk);
+    });
+}
+
+// 1. ดึงข้อมูลแสดงการ์ดใบสมัคร
+async function renderCards(searchTerm = '') {
+    const container = $('cardList');
+    container.innerHTML = '<div style="text-align:center; padding: 20px; color:#666;">⏳ กำลังโหลดข้อมูล...</div>';
+
+    const role = localStorage.getItem('userRole') || 'Staff';
+    const username = localStorage.getItem('username') || '';
+
+    try {
+        const res = await fetch(GOOGLE_SHEET_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'getApplications', role: role, username: username })
+        });
+        const result = await res.json();
+        currentSheetData = result.data || [];
+
+        let data = [...currentSheetData];
+
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            data = data.filter(item => 
+                (item['ชื่อ-นามสกุล'] && String(item['ชื่อ-นามสกุล']).toLowerCase().includes(term)) || 
+                (item['ตำแหน่งที่สมัคร'] && String(item['ตำแหน่งที่สมัคร']).toLowerCase().includes(term))
+            );
+        }
+
+        container.innerHTML = '';
+        $('recordCount').innerText = `${data.length} ใบสมัคร`;
+        if ($('selectAll')) $('selectAll').checked = false;
+
+        if (!data || data.length === 0) {
+            container.innerHTML = '<div style="text-align:center; color:#888; padding: 20px;">ไม่พบรายการใบสมัคร</div>';
+            return;
+        }
+
+        const isAdmin = (role === 'Admin');
+        const isAuditorOrAdmin = (role === 'Admin' || role === 'Auditor');
+
+        data.forEach(item => {
+            const receiptNo = item['เลขที่ใบสมัคร'] || '-';
+            const status = item['สถานะ'] || 'รอตรวจสอบ';
+
+            const card = document.createElement('div');
+            card.style.cssText = `
+                background-color: #f2ecd9;
+                border: 1px solid #e0d8c3;
+                border-radius: 8px;
+                padding: 15px 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                transition: all 0.2s;
+            `;
+            card.onmouseover = () => { card.style.transform = 'translateY(-2px)'; card.style.boxShadow = '0 4px 8px rgba(0,0,0,0.05)'; };
+            card.onmouseout = () => { card.style.transform = 'translateY(0)'; card.style.boxShadow = 'none'; };
+
+            const checkboxHTML = isAuditorOrAdmin ? `<input type="checkbox" class="row-checkbox" value="${escapeHtml(receiptNo)}" style="cursor: pointer;">` : '';
+
+            let statusHTML = `<span class="status-badge ${getStatusBadgeClass(status)}">${escapeHtml(status)}</span>`;
+            if (isAdmin) {
+                statusHTML = `
+                    <select onchange="updateCandidateStatus('${escapeHtml(receiptNo)}', this.value)" style="font-size: 12px; padding: 3px 6px; border-radius: 4px; border: 1px solid var(--line); background: white;">
+                        <option value="รอตรวจสอบ" ${status === 'รอตรวจสอบ' ? 'selected' : ''}>⏳ รอตรวจสอบ</option>
+                        <option value="เรียกสัมภาษณ์" ${status === 'เรียกสัมภาษณ์' ? 'selected' : ''}>📞 เรียกสัมภาษณ์</option>
+                        <option value="ผ่านการคัดเลือก" ${status === 'ผ่านการคัดเลือก' ? 'selected' : ''}>✅ ผ่านการคัดเลือก</option>
+                        <option value="ไม่ผ่านการคัดเลือก" ${status === 'ไม่ผ่านการคัดเลือก' ? 'selected' : ''}>❌ ไม่ผ่านการคัดเลือก</option>
+                    </select>
+                `;
+            }
+
+            const deleteBtnHTML = isAdmin ? `<button onclick="deleteRecord('${escapeHtml(receiptNo)}')" style="background-color: #d9534f; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">ลบ</button>` : '';
+
+            card.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    ${checkboxHTML}
+                    <div>
+                        <h3 class="clickable-name" onclick="viewDetailsByReceipt('${escapeHtml(receiptNo)}')" title="คลิกเพื่อดูรายละเอียด">${escapeHtml(item['ชื่อ-นามสกุล'] || 'ไม่ระบุชื่อ')}</h3>
+                        <p style="margin: 0; color: #555; font-size: 14px;">${escapeHtml(item['ตำแหน่งที่สมัคร'] || 'ไม่ระบุตำแหน่ง')} / ${escapeHtml(item['เบอร์โทรศัพท์'] || '-')}</p>
+                        <div style="margin-top: 6px; font-size: 13px;">สถานะ: ${statusHTML}</div>
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="color: #cda12f; font-weight: bold; font-size: 13px; margin-bottom: 5px; font-family: 'IBM Plex Mono', monospace;">${escapeHtml(receiptNo)}</div>
+                    <div style="color: #777; font-size: 12px; margin-bottom: 8px;">${escapeHtml(item['วันเวลาที่ยื่น'] || '-')}</div>
+                    <div>
+                        <button onclick="exportRecordToCSVByReceipt('${escapeHtml(receiptNo)}')" style="background-color: #27ae60; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 12px; margin-right: 4px;">📥 โหลด</button>
+                        ${deleteBtnHTML}
+                    </div>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    } catch (err) {
+        container.innerHTML = '<div style="text-align:center; color:#8C4A38; padding: 20px;">❌ ไม่สามารถดึงข้อมูลได้</div>';
+    }
+}
+
+async function updateCandidateStatus(receiptNo, newStatus) {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'Admin') {
+        await customAlert('คุณไม่มีสิทธิ์แก้ไขสถานะ', true, 'แจ้งเตือน');
+        return;
+    }
+    try {
+        const res = await fetch(GOOGLE_SHEET_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'updateStatus', receiptNo: receiptNo, newStatus: newStatus, role: role })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+            await customAlert('อัปเดตสถานะเรียบร้อยแล้ว', false, 'สำเร็จ');
+            renderCards($('searchInput').value);
+        } else {
+            await customAlert(result.message || 'ไม่สามารถอัปเดตสถานะได้', true, 'เกิดข้อผิดพลาด');
+        }
+    } catch(err) {
+        await customAlert('เกิดข้อผิดพลาดในการอัปเดตสถานะ', true, 'เกิดข้อผิดพลาด');
+    }
+}
+
+function searchCards() {
+    renderCards($('searchInput').value);
+}
+
+// 2. แสดงรายละเอียดใบสมัคร Modal
+function viewDetailsByReceipt(receiptNo) {
+    const data = currentSheetData.find(item => String(item['เลขที่ใบสมัคร']).trim() === String(receiptNo).trim());
+    if (!data) return;
+
+    const status = data['สถานะ'] || 'รอตรวจสอบ';
+
+    $('modalName').innerText = data['ชื่อ-นามสกุล'] || 'ไม่ระบุชื่อ';
+    $('mdReceipt').innerText = data['เลขที่ใบสมัคร'] || '-';
+    $('mdDate').innerText = data['วันเวลาที่ยื่น'] || '-';
+    $('mdPosition').innerText = data['ตำแหน่งที่สมัคร'] || '-';
+    $('mdStatus').innerHTML = `<span class="status-badge ${getStatusBadgeClass(status)}">${escapeHtml(status)}</span>`;
+    $('mdSalary').innerText = data['เงินเดือนที่คาดหวัง'] || '-';
+    
+    const phone = data['เบอร์โทรศัพท์'] || '-';
+    $('mdPhone').innerHTML = phone !== '-' ? `<a href="tel:${phone}" class="detail-link">${escapeHtml(phone)}</a>` : '-';
+    
+    const email = data['อีเมล'] || '-';
+    $('mdEmail').innerHTML = email !== '-' ? `<a href="mailto:${email}" class="detail-link">${escapeHtml(email)}</a>` : '-';
+
+    $('mdDob').innerText = formatDateOnly(data['วันเกิด']);
+    $('mdEdu').innerText = data['วุฒิการศึกษา'] || '-';
+    $('mdAddress').innerText = data['ที่อยู่ปัจจุบัน'] || '-';
+    $('mdExp').innerText = data['ประสบการณ์ทำงาน'] || '-';
+
+    const filesGroup = $('mdFilesGroup');
+    const filesContainer = $('mdFiles');
+    filesContainer.innerHTML = '';
+    
+    const fileListStr = data['รายชื่อไฟล์แนบ'] || data['ลิงก์ไฟล์แนบ (Google Drive)'] || '-';
+    if (fileListStr !== '-') {
+        filesGroup.style.display = 'block';
+        const files = fileListStr.split(', ');
+        files.forEach(fileName => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding: 6px 10px; background: #f2ecd9; border: 1px solid #e0d8c3; border-radius: 6px; font-size: 13px; color: var(--forest);';
+            div.innerText = '📄 ' + fileName;
+            filesContainer.appendChild(div);
+        });
+    } else {
+        filesGroup.style.display = 'none'; 
+    }
+
+    $('detailModal').classList.add('active');
+}
+
+function closeModal(e) {
+    if (e && e.target.id !== 'detailModal' && !e.target.classList.contains('modal-close')) return;
+    $('detailModal').classList.remove('active');
+}
+
+// 3. แท็บและการจัดการแบบฟอร์ม
+$('tabApplyBtn').onclick = () => switchTab('apply');
+$('tabViewBtn').onclick = () => switchTab('view');
+
+function switchTab(name){
+  const isApply = name === 'apply';
+  $('tabApplyBtn').classList.toggle('active', isApply);
+  $('tabViewBtn').classList.toggle('active', !isApply);
+  $('applyPanel').style.display = isApply ? 'block' : 'none';
+  $('viewPanel').style.display = isApply ? 'none' : 'block';
+  if (!isApply) checkAuthStateAndRender();
+}
+
+['fName', 'fPhone', 'fEmail', 'fPosition'].forEach(id => {
+  $(id).addEventListener('input', () => clearFieldError('wrap_' + id));
+});
+  
+$('fEducation').addEventListener('change', (e) => {
+  if (e.target.value === 'อื่นๆ') {
+    $('wrap_fOtherEdu').style.display = 'block';
+  } else {
+    $('wrap_fOtherEdu').style.display = 'none';
+    $('fOtherEdu').value = ''; 
+  }
+});
+  
+$('dropzone').onclick = () => $('fFiles').click();
+
+$('fFiles').addEventListener('change', (e)=>{
+  for(const f of e.target.files){
+    if(f.size > 8*1024*1024){
+      renderStatus('ไฟล์ "'+f.name+'" มีขนาดเกิน 8 MB กรุณาเลือกไฟล์ที่เล็กลง', 'err');
+      continue;
+    }
+    selectedFiles.push(f);
+  }
+  e.target.value = '';
+  renderFileList();
+});
+
+function renderFileList(){
+  const el = $('filelist');
+  el.innerHTML = '';
+  selectedFiles.forEach((f, idx)=>{
+    const chip = document.createElement('div');
+    chip.className = 'filechip';
+    chip.innerHTML = `<span class="name">${escapeHtml(f.name)}</span><button type="button" data-idx="${idx}">นำออก</button>`;
+    chip.querySelector('button').onclick = () => { selectedFiles.splice(idx,1); renderFileList(); };
+    el.appendChild(chip);
+  });
+}
+
+function renderStatus(msg, type){
+  const el = $('statusMsg');
+  el.textContent = msg;
+  el.className = 'status-msg' + (type ? ' '+type : '');
+}
+
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, (c)=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function setFieldError(wrapId){
+  const wrap = $(wrapId);
+  if(wrap) wrap.classList.add('invalid');
+}
+function clearFieldError(wrapId){
+  const wrap = $(wrapId);
+  if(wrap) wrap.classList.remove('invalid');
+}
+function clearAllFieldErrors(){
+  ['wrap_fName', 'wrap_fPhone', 'wrap_fEmail', 'wrap_fPosition'].forEach(clearFieldError);
+}
+
+function isValidEmail(v){
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+}
+
+function cancelEdit() {
+    $('appForm').reset();
+    $('submitBtn').textContent = 'ส่งใบสมัคร';
+    $('cancelEditBtn').style.display = 'none';
+    $('wrap_fOtherEdu').style.display = 'none';
+    renderStatus('', '');
+    selectedFiles = [];
+    renderFileList();
+    clearAllFieldErrors();
+}
+
+// 4. ส่งข้อมูลสมัครงาน
+async function handleSubmit(e){
+  if(e && e.preventDefault) e.preventDefault();
+  clearAllFieldErrors();
+
+  const name = $('fName').value.trim();
+  const phone = $('fPhone').value.trim();
+  const email = $('fEmail').value.trim();
+  const position = $('fPosition').value.trim();
+
+  let firstInvalidWrap = null;
+  const markInvalid = (wrapId) => {
+    setFieldError(wrapId);
+    if(!firstInvalidWrap) firstInvalidWrap = wrapId;
+  };
+
+  if(!name) markInvalid('wrap_fName');
+  if(!phone) markInvalid('wrap_fPhone');
+  if(!email || !isValidEmail(email)) markInvalid('wrap_fEmail');
+  if(!position) markInvalid('wrap_fPosition');
+
+  if(firstInvalidWrap){
+    renderStatus('กรุณากรอกข้อมูลในช่องที่ไฮไลต์สีแดงให้ครบถ้วนและถูกต้อง', 'err');
+    const el = $(firstInvalidWrap);
+    el.scrollIntoView({behavior:'smooth', block:'center'});
+    const focusable = el.querySelector('input, select, textarea');
+    if(focusable) focusable.focus();
+    return;
+  }
+
+  $('submitBtn').disabled = true;
+  
+  const mainEdu = $('fEducation').value;
+  const otherEdu = $('fOtherEdu').value.trim();
+  const finalEducation = (mainEdu === 'อื่นๆ' && otherEdu) ? `อื่นๆ (${otherEdu})` : mainEdu;
+
+  const attachedFiles = selectedFiles.map(f => ({ name: f.name, type: f.type }));
+
+  renderStatus('กำลังบันทึกและส่งใบสมัคร...', '');
+  try{
+    const now = new Date();
+    const id = now.getTime().toString(36) + Math.random().toString(36).slice(2,6);
+    const receiptNo = 'APP-' + now.getFullYear() + String(now.getMonth()+1).padStart(2,'0') + String(now.getDate()).padStart(2,'0') + '-' + id.slice(-4).toUpperCase();
+
+    const appRecord = {
+        action: 'create',
+        receiptNo: receiptNo,
+        name: name,
+        phone: phone,
+        email: email,
+        dob: $('fDob').value || '-',
+        address: $('fAddress').value.trim() || '-',
+        position: position,
+        salary: $('fSalary').value.trim() || '-',
+        education: finalEducation || '-',
+        experience: $('fExperience').value.trim() || '-',
+        filesCount: selectedFiles.length,
+        attachedFiles: attachedFiles,
+        createdAt: now.toLocaleString('th-TH')
+    };
+
+    // ส่งเข้า Google Sheets
+    await fetch(GOOGLE_SHEET_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify(appRecord)
+    });
+
+    // ส่งเข้า FormSubmit (อีเมล)
+    const fd = new FormData();
+    fd.append('เลขที่ใบสมัคร', receiptNo);
+    fd.append('ชื่อ-นามสกุล', name);
+    fd.append('เบอร์โทรศัพท์', phone);
+    fd.append('email', email);
+    fd.append('วันเกิด', appRecord.dob);
+    fd.append('ที่อยู่', appRecord.address);
+    fd.append('ตำแหน่งที่สมัคร', position);
+    fd.append('เงินเดือนที่คาดหวัง', appRecord.salary);
+    fd.append('วุฒิการศึกษา', appRecord.education);
+    fd.append('ประสบการณ์ทำงาน', appRecord.experience);
+    fd.append('_subject', 'ใบสมัครงานใหม่: ' + name + ' — ' + position);
+    fd.append('_captcha', 'false');
+
+    selectedFiles.forEach((f, idx) => {
+      fd.append('file_' + (idx + 1), f, f.name);
+    });
+
+    fetch(FORMSUBMIT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json' },
+      body: fd
+    }).catch(err => console.error('FormSubmit error:', err));
+
+    renderStatus('ส่งใบสมัครและบันทึกเรียบร้อยแล้ว', 'ok');
+    $('receiptNo').textContent = receiptNo;
+    $('receiptName').textContent = 'ชื่อผู้สมัคร: ' + name + ' — ตำแหน่ง: ' + position;
+    $('receiptDate').textContent = 'วันที่ยื่นใบสมัคร: ' + now.toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'});
+    $('receiptBox').classList.add('show');
+    $('receiptBox').scrollIntoView({behavior:'smooth', block:'center'});
+
+    $('appForm').reset();
+    selectedFiles = [];
+    renderFileList();
+    clearAllFieldErrors();
+  }catch(err){
+    renderStatus('เกิดข้อผิดพลาด: ' + err.message, 'err');
+  }
+  $('submitBtn').disabled = false;
+}
+
+$('appForm').addEventListener('submit', handleSubmit);
+
+// 5. ลบข้อมูล (Admin เท่านั้น)
+async function deleteRecord(receiptNo) {
+    if (!receiptNo || receiptNo === '-') return;
+
+    const role = localStorage.getItem('userRole');
+    if (role !== 'Admin') {
+        await customAlert('คุณไม่มีสิทธิ์ลบข้อมูล', true, 'แจ้งเตือน');
+        return;
+    }
+
+    const confirmed = await customConfirmDelete();
+    if (!confirmed) return;
+
+    try {
+        renderStatus('กำลังลบข้อมูล...', '');
+        const res = await fetch(GOOGLE_SHEET_ENDPOINT, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: JSON.stringify({ action: 'delete', receiptNo: receiptNo, role: role })
+        });
+        const result = await res.json();
+        
+        if (result.status === 'success') {
+            await customAlert('ลบข้อมูลเรียบร้อยแล้ว', false, 'สำเร็จ');
+            renderCards($('searchInput').value);
+        } else {
+            await customAlert(result.message || 'ไม่สามารถลบข้อมูลได้', true, 'เกิดข้อผิดพลาด');
+        }
+    } catch (err) {
+        await customAlert('เกิดข้อผิดพลาดในการลบข้อมูล: ' + err.message, true, 'เกิดข้อผิดพลาด');
+    } finally {
+        renderStatus('', '');
+    }
+}
+
+async function deleteSelectedRecords() {
+    const role = localStorage.getItem('userRole');
+    if (role !== 'Admin') {
+        await customAlert('คุณไม่มีสิทธิ์ลบข้อมูล', true, 'แจ้งเตือน');
+        return;
+    }
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        await customAlert('กรุณาเลือกรายการที่ต้องการลบอย่างน้อย 1 รายการ', true, 'แจ้งเตือน');
+        return;
+    }
+
+    const confirmed = await customConfirmDelete();
+    if (!confirmed) return;
+
+    renderStatus('กำลังลบข้อมูล...', '');
+    for (const cb of checkedBoxes) {
+        try {
+            await fetch(GOOGLE_SHEET_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain' },
+                body: JSON.stringify({ action: 'delete', receiptNo: cb.value, role: role })
+            });
+        } catch (err) {}
+    }
+    await customAlert('ลบรายการที่เลือกเรียบร้อยแล้ว', false, 'สำเร็จ');
+    renderStatus('', '');
+    renderCards($('searchInput').value);
+}
+
+// 6. ส่งออก CSV
+function formatCSVValue(val) {
+    if (val === null || val === undefined) return '""';
+    let str = String(val).replace(/"/g, '""');
+    return `"=""${str}"""`;
+}
+
+function downloadCSVFile(csvContent, fileName) {
+    const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportAllToCSV() {
+    if (!currentSheetData || currentSheetData.length === 0) {
+        customAlert('ยังไม่มีข้อมูลให้ดาวน์โหลด', true, 'แจ้งเตือน');
+        return;
+    }
+
+    const headers = ["ลำดับ", "วันเวลาที่ยื่น", "เลขที่ใบสมัคร", "ชื่อ-นามสกุล", "เบอร์โทรศัพท์", "อีเมล", "วันเกิด", "ที่อยู่ปัจจุบัน", "ตำแหน่งที่สมัคร", "เงินเดือนที่คาดหวัง", "วุฒิการศึกษา", "ประสบการณ์ทำงาน", "สถานะ"];
+    let csv = headers.map(formatCSVValue).join(",") + "\n";
+
+    currentSheetData.forEach((item, index) => {
+        const row = [
+            index + 1,
+            item['วันเวลาที่ยื่น'] || '-',
+            item['เลขที่ใบสมัคร'] || '-',
+            item['ชื่อ-นามสกุล'] || '-',
+            item['เบอร์โทรศัพท์'] || '-',
+            item['อีเมล'] || '-',
+            formatDateOnly(item['วันเกิด']),
+            item['ที่อยู่ปัจจุบัน'] || '-',
+            item['ตำแหน่งที่สมัคร'] || '-',
+            item['เงินเดือนที่คาดหวัง'] || '-',
+            item['วุฒิการศึกษา'] || '-',
+            item['ประสบการณ์ทำงาน'] || '-',
+            item['สถานะ'] || 'รอตรวจสอบ'
+        ];
+        csv += row.map(formatCSVValue).join(",") + "\n";
+    });
+
+    downloadCSVFile(csv, `ใบสมัครงานทั้งหมด_${new Date().toISOString().slice(0,10)}.csv`);
+}
+
+function exportRecordToCSVByReceipt(receiptNo) {
+    const item = currentSheetData.find(d => String(d['เลขที่ใบสมัคร']).trim() === String(receiptNo).trim());
+    if (!item) {
+        customAlert('ไม่พบข้อมูลรายการนี้', true, 'แจ้งเตือน');
+        return;
+    }
+
+    const headers = ["ลำดับ", "วันเวลาที่ยื่น", "เลขที่ใบสมัคร", "ชื่อ-นามสกุล", "เบอร์โทรศัพท์", "อีเมล", "วันเกิด", "ที่อยู่ปัจจุบัน", "ตำแหน่งที่สมัคร", "เงินเดือนที่คาดหวัง", "วุฒิการศึกษา", "ประสบการณ์ทำงาน", "สถานะ"];
+    let csv = headers.map(formatCSVValue).join(",") + "\n";
+
+    const row = [
+        1,
+        item['วันเวลาที่ยื่น'] || '-',
+        item['เลขที่ใบสมัคร'] || '-',
+        item['ชื่อ-นามสกุล'] || '-',
+        item['เบอร์โทรศัพท์'] || '-',
+        item['อีเมล'] || '-',
+        formatDateOnly(item['วันเกิด']),
+        item['ที่อยู่ปัจจุบัน'] || '-',
+        item['ตำแหน่งที่สมัคร'] || '-',
+        item['เงินเดือนที่คาดหวัง'] || '-',
+        item['วุฒิการศึกษา'] || '-',
+        item['ประสบการณ์ทำงาน'] || '-',
+        item['สถานะ'] || 'รอตรวจสอบ'
+    ];
+    csv += row.map(formatCSVValue).join(",") + "\n";
+
+    downloadCSVFile(csv, `ใบสมัคร_${receiptNo}.csv`);
+}
+
+function toggleSelectAll(master) {
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = master.checked);
+}
+
+function exportSelectedToCSV() {
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    if (checkedBoxes.length === 0) {
+        customAlert('กรุณาติ๊กเลือกรายการที่ต้องการดาวน์โหลดอย่างน้อย 1 รายการ', true, 'แจ้งเตือน');
+        return;
+    }
+
+    const selectedReceipts = Array.from(checkedBoxes).map(cb => cb.value);
+    const data = currentSheetData.filter(item => selectedReceipts.includes(String(item['เลขที่ใบสมัคร'])));
+    
+    const headers = ["ลำดับ", "วันเวลาที่ยื่น", "เลขที่ใบสมัคร", "ชื่อ-นามสกุล", "เบอร์โทรศัพท์", "อีเมล", "วันเกิด", "ที่อยู่ปัจจุบัน", "ตำแหน่งที่สมัคร", "เงินเดือนที่คาดหวัง", "วุฒิการศึกษา", "ประสบการณ์ทำงาน", "สถานะ"];
+    let csv = headers.map(formatCSVValue).join(",") + "\n";
+
+    data.forEach((item, index) => {
+        const row = [
+            index + 1,
+            item['วันเวลาที่ยื่น'] || '-',
+            item['เลขที่ใบสมัคร'] || '-',
+            item['ชื่อ-นามสกุล'] || '-',
+            item['เบอร์โทรศัพท์'] || '-',
+            item['อีเมล'] || '-',
+            formatDateOnly(item['วันเกิด']),
+            item['ที่อยู่ปัจจุบัน'] || '-',
+            item['ตำแหน่งที่สมัคร'] || '-',
+            item['เงินเดือนที่คาดหวัง'] || '-',
+            item['วุฒิการศึกษา'] || '-',
+            item['ประสบการณ์ทำงาน'] || '-',
+            item['สถานะ'] || 'รอตรวจสอบ'
+        ];
+        csv += row.map(formatCSVValue).join(",") + "\n";
+    });
+
+    downloadCSVFile(csv, `ใบสมัคร_เลือก_${data.length}_รายการ.csv`);
+}
+</script>
+</body>
+</html>
