@@ -536,22 +536,20 @@
     <!-- LOGIN FORM SECTION -->
     <div id="loginFormSection" class="login-box">
       <h3>🔐 เข้าสู่ระบบเจ้าหน้าที่</h3>
-      <p style="font-size: 12px; color: var(--ink-soft); margin-bottom: 15px;">ใส่ gmail + เบอร์โทรศัพท์ที่กรอกเพื่อตรวจสอบเอกสารที่ส่ง</p>
+      <p style="font-size: 12px; color: var(--ink-soft); margin-bottom: 15px;">ระบุอีเมลและเบอร์โทรศัพท์ที่เคยลงทะเบียนเพื่อตรวจสอบข้อมูล</p>
       <div class="field" style="text-align: left;">
-        <label>ชื่อผู้ใช้ (Username)
-        อีเมลที่ส่ง</label>
-        <input type="text" id="loginUser" placeholder="ระบุชื่อผู้ใช้">
+        <label>ชื่อผู้ใช้ (Username / อีเมล)</label>
+        <input type="text" id="loginUser" placeholder="ระบุชื่อผู้ใช้หรืออีเมล">
       </div>
       <div class="field" style="text-align: left;">
-        <label>รหัสผ่าน (Password)
-        เบอร์โทรศัพท์</label>
+        <label>รหัสผ่าน (Password / เบอร์โทรศัพท์)</label>
         <input type="password" id="loginPass" placeholder="ระบุรหัสผ่าน">
       </div>
       <div id="loginErrorMsg" class="status-msg err" style="margin-bottom: 1rem; display: none;"></div>
       <button type="button" class="primary" id="loginBtn" onclick="submitLogin()" style="width: 100%;">เข้าสู่ระบบ</button>
     </div>
 
-    <!-- DASHBOARD CONTENT (แสดงหลังเข้าสู่ระบบสำเร็จ) -->
+    <!-- DASHBOARD CONTENT -->
     <div id="adminContent" style="display: none;">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
         <div id="userInfoDisplay" style="display: flex; align-items: center; gap: 8px; font-size: 14px;"></div>
@@ -739,7 +737,7 @@ function checkAuthStateAndRender() {
 function getRoleLabel(role) {
     if (role === 'Admin') return '👑 Admin (ผู้ดูแลระบบ)';
     if (role === 'Auditor') return '👁️ Auditor (ผู้ตรวจสอบ)';
-    return '👤 ผู้สมัคร)';
+    return '👤 Staff (เจ้าหน้าที่)';
 }
 
 $('loginPass').addEventListener('keypress', (e) => {
@@ -750,9 +748,17 @@ $('loginPass').addEventListener('keypress', (e) => {
 function formatDateOnly(dateStr) {
     if (!dateStr || dateStr === '-') return '-';
     let cleanStr = typeof dateStr === 'string' && dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
-    const date = new Date(cleanStr);
-    if (!isNaN(date.getTime())) {
-        return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // ป้องกันการแปลง Timezone คลาดเคลื่อนด้วยการแบ่ง String YYYY-MM-DD
+    const parts = String(cleanStr).split('-');
+    if (parts.length === 3) {
+        const year = parseInt(parts[0], 10);
+        const month = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        const date = new Date(year, month, day);
+        if (!isNaN(date.getTime())) {
+            return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
     }
     return cleanStr;
 }
