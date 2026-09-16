@@ -179,6 +179,16 @@
   }
   .app-doc .doc-item{font-size:14px;white-space:pre-wrap;word-break:break-word;}
 
+  .attach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+  @media (max-width:560px){ .attach-grid{grid-template-columns:1fr;} }
+  .attach-item{border:1px solid var(--line);border-radius:var(--radius);padding:10px;background:var(--paper-2);}
+  .attach-item img{width:100%;max-height:320px;object-fit:contain;border-radius:6px;background:var(--white);display:block;}
+  .attach-item .attach-fallback{font-size:12.5px;color:var(--ink-soft);margin:8px 0;}
+  .attach-item .file-link{display:block;margin-top:8px;font-size:12.5px;text-align:center;}
+  @media print{
+    .attach-item{break-inside:avoid;page-break-inside:avoid;}
+  }
+
   @media print{
     .wrap, .file-modal, .confirm-modal, .edit-modal{display:none !important;}
     .app-modal{
@@ -306,7 +316,7 @@ const STATUS_OPTIONS = ['รอพิจารณา', 'นัดสัมภา
 let staffSession = { password: null, role: null };
 let lastResults = [];
 
-// วาง Web app URL  ตรงนี้
+// วาง Web app URL ตรงนี้
 const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzk5ojEOFgpPA9JRTfoaM3HkDrHJ83IyWn-yvKGDFS_XVEkDk3awV8i0tT3AzDOIyRaPg/exec';
 
 // ================= เปิดดูไฟล์แนบในหน้าเว็บ (ไม่เปิดแท็บใหม่) =================
@@ -438,13 +448,29 @@ $('staffRefreshBtn').addEventListener('click', async () => {
 // ================= ป๊อปอัพใบสมัครแบบเต็ม (ดูรายละเอียด + พิมพ์/ดาวน์โหลด PDF) =================
 let currentModalRecord = null;
 
+function driveFileId(url){
+  const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+  return match ? match[1] : null;
+}
+
 function openApplicationModal(r){
   currentModalRecord = r;
   const dateStr = r.date ? new Date(r.date).toLocaleDateString('th-TH', {year:'numeric', month:'long', day:'numeric'}) : '-';
   const fileUrls = (r.files || '').split('\n').filter(Boolean);
   const filesHtml = fileUrls.length
-    ? fileUrls.map((url,i)=>`<span class="file-link no-print" data-url="${escapeHtml(url)}">ไฟล์แนบ ${i+1}</span>`).join('<br>')
-    : '-';
+    ? fileUrls.map((url,i) => {
+        const id = driveFileId(url);
+        const thumbSrc = id ? `https://drive.google.com/thumbnail?id=${id}&sz=w1000` : '';
+        return `
+          <div class="attach-item">
+            <img src="${thumbSrc}" crossorigin="anonymous" alt="ไฟล์แนบ ${i+1}"
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+            <p class="attach-fallback" style="display:none;">ไม่สามารถแสดงตัวอย่างไฟล์นี้ได้ (ไฟล์แนบ ${i+1})</p>
+            <span class="file-link no-print" data-url="${escapeHtml(url)}">🔍 ดูไฟล์เต็ม / เปิดในแท็บใหม่</span>
+          </div>
+        `;
+      }).join('')
+    : '<div class="doc-item">-</div>';
 
   $('appModalBody').innerHTML = `
     <div class="app-doc">
@@ -489,7 +515,7 @@ function openApplicationModal(r){
 
       <div class="doc-section">
         <div class="doc-section-title">ไฟล์แนบ</div>
-        <div class="doc-item">${filesHtml}</div>
+        <div class="attach-grid">${filesHtml}</div>
       </div>
 
       ${r.notes ? `
