@@ -306,7 +306,7 @@ const STATUS_OPTIONS = ['รอพิจารณา', 'นัดสัมภา
 let staffSession = { password: null, role: null };
 let lastResults = [];
 
-// วาง Web app URL ตรงนี้
+// วาง Web app URL  ตรงนี้
 const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzk5ojEOFgpPA9JRTfoaM3HkDrHJ83IyWn-yvKGDFS_XVEkDk3awV8i0tT3AzDOIyRaPg/exec';
 
 // ================= เปิดดูไฟล์แนบในหน้าเว็บ (ไม่เปิดแท็บใหม่) =================
@@ -356,6 +356,19 @@ $('staffPassword').addEventListener('keydown', (e) => {
   }
 });
 
+// ดึงข้อมูลแบบ JSON พร้อมลองใหม่อัตโนมัติ 1 ครั้ง ถ้า Apps Script ยังปลุกเครื่องไม่ทัน
+// (ตอบกลับมาเป็นหน้า HTML แทน JSON — ทำให้ res.json() พังด้วย error "Unexpected token '<'")
+async function fetchJsonWithRetry(url, options, retryDelayMs){
+  try{
+    const res = await fetch(url, options);
+    return await res.json();
+  }catch(err){
+    await new Promise(r => setTimeout(r, retryDelayMs || 1200));
+    const res2 = await fetch(url, options);
+    return await res2.json();
+  }
+}
+
 $('staffLoginBtn').addEventListener('click', async () => {
   const pw = $('staffPassword').value;
   const statusEl = $('staffLoginStatus');
@@ -364,13 +377,12 @@ $('staffLoginBtn').addEventListener('click', async () => {
     statusEl.className = 'status-msg err';
     return;
   }
-  statusEl.textContent = 'กำลังเข้าสู่ระบบ...';
+  statusEl.textContent = 'กำลังเข้าสู่ระบบ... (ถ้ารอครั้งแรกอาจช้าสักครู่ ระบบกำลังปลุกเครื่อง)';
   statusEl.className = 'status-msg';
   $('staffLoginBtn').disabled = true;
   try{
     const url = SHEET_ENDPOINT + '?action=list&password=' + encodeURIComponent(pw);
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await fetchJsonWithRetry(url);
     if(data.status !== 'ok'){
       statusEl.textContent = data.message || 'เข้าสู่ระบบไม่สำเร็จ';
       statusEl.className = 'status-msg err';
@@ -385,7 +397,7 @@ $('staffLoginBtn').addEventListener('click', async () => {
     lastResults = data.results;
     renderStaffTable(data.results);
   }catch(err){
-    statusEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+    statusEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message + ' — ลองกดเข้าสู่ระบบอีกครั้ง';
     statusEl.className = 'status-msg err';
   }
   $('staffLoginBtn').disabled = false;
@@ -407,8 +419,7 @@ $('staffRefreshBtn').addEventListener('click', async () => {
   statusEl.className = 'status-msg';
   try{
     const url = SHEET_ENDPOINT + '?action=list&password=' + encodeURIComponent(staffSession.password);
-    const res = await fetch(url);
-    const data = await res.json();
+    const data = await fetchJsonWithRetry(url);
     if(data.status !== 'ok'){
       statusEl.textContent = data.message || 'รีเฟรชไม่สำเร็จ';
       statusEl.className = 'status-msg err';
@@ -419,7 +430,7 @@ $('staffRefreshBtn').addEventListener('click', async () => {
     statusEl.textContent = 'อัปเดตล่าสุดแล้ว';
     statusEl.className = 'status-msg ok';
   }catch(err){
-    statusEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message;
+    statusEl.textContent = 'เกิดข้อผิดพลาด: ' + err.message + ' — ลองกดรีเฟรชอีกครั้ง';
     statusEl.className = 'status-msg err';
   }
 });
@@ -511,7 +522,7 @@ $('appModalDownload').addEventListener('click', () => {
 });
 
 // ================= ป๊อปอัพแก้ไขข้อมูลทั้งหมดของใบสมัคร (เจ้าหน้าที่/แอดมิน) =================
-const DOC_CHECKLIST_OPTIONS = ['บัตรประชาชน','ทะเบียนบ้าน','ใบ สด.9 ','หนังสือรับรองการทำงาน','ทรานสคริปต์'];
+const DOC_CHECKLIST_OPTIONS = ['บัตรประชาชน','ทะเบียนบ้าน','ใบ สด.9 (ของผู้ชาย)','หนังสือรับรองการทำงาน','ทรานสคริปต์'];
 let editModalNewFiles = [];
 let editModalRemoveFiles = [];
 
