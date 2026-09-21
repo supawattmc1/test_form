@@ -317,7 +317,7 @@ let staffSession = { password: null, role: null };
 let lastResults = [];
 
 // วาง Web app URL ตรงนี้
-const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzk5ojEOFgpPA9JRTfoaM3HkDrHJ83IyWn-yvKGDFS_XVEkDk3awV8i0tT3AzDOIyRaPg/exec';
+const SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxUkCcPPOiaJnUe7jdvYmAbLynREgYVyEW-X48W71mvsyu5VuNTT8pPjOiwOy9qrPEQ2w/exec';
 
 // ================= เปิดดูไฟล์แนบในหน้าเว็บ (ไม่เปิดแท็บใหม่) =================
 function openFilePreview(url){
@@ -672,7 +672,13 @@ async function submitEditModal(r){
   statusEl.className = 'status-msg';
 
   const fields = {};
-  $('editModalBody').querySelectorAll('[data-f]').forEach(el => { fields[el.dataset.f] = el.value.trim(); });
+  $('editModalBody').querySelectorAll('[data-f]').forEach(el => {
+    if(el.dataset.f === 'สถานะ'){
+      if(el.value !== r.status) fields['สถานะ'] = el.value; // ส่งเฉพาะตอนสถานะเปลี่ยนจริง
+    } else {
+      fields[el.dataset.f] = el.value.trim();
+    }
+  });
   const checkedDocs = Array.from($('editModalBody').querySelectorAll('.editModalDocCheck:checked')).map(el => el.value);
   fields['เอกสารที่แนบมาด้วย'] = checkedDocs.join(', ') || '-';
 
@@ -856,7 +862,9 @@ async function doSaveRow(tr, original, isAdmin, isRetry){
   if(isAdmin){
     const fields = {};
     tr.querySelectorAll('[data-field]').forEach(el => {
-      if(el.tagName === 'SELECT') fields['สถานะ'] = el.value;
+      if(el.tagName === 'SELECT'){
+        if(el.value !== original.status) fields['สถานะ'] = el.value; // ส่งเฉพาะตอนสถานะเปลี่ยนจริง
+      }
       else if(el.dataset.field === 'notes') fields['หมายเหตุ'] = el.value;
       else fields[el.dataset.field] = el.value;
     });
@@ -879,6 +887,9 @@ async function doSaveRow(tr, original, isAdmin, isRetry){
     const data = await res.json();
     statusEl.textContent = data.status === 'ok' ? 'บันทึกแล้ว: ' + original.receiptNo : (data.message || 'บันทึกไม่สำเร็จ: ' + original.receiptNo);
     statusEl.className = 'status-msg ' + (data.status === 'ok' ? 'ok' : 'err');
+    if(data.status === 'ok' && payload.fields && payload.fields['สถานะ'] !== undefined){
+      original.status = payload.fields['สถานะ']; // กันแจ้งเตือนซ้ำตอน autosave ช่องอื่นถัดไป
+    }
   }catch(err){
     if(!isRetry){
       // เชื่อมต่อหลุดกลางทาง ลองซ้ำอีกครั้งอัตโนมัติหลังจากรอสักครู่
